@@ -1,8 +1,6 @@
 #include "aoo_sink.hpp"
 #include "aoo/aoo_utils.hpp"
-
-#include "oscpack/osc/OscOutboundPacketStream.h"
-#include "oscpack/osc/OscReceivedElements.h"
+#include "aoo/aoo_osc.hpp"
 
 #include <algorithm>
 
@@ -78,8 +76,18 @@ int32_t aoo_sink_handlemessage(aoo_sink *sink, const char *data, int32_t n,
 // /AoO/<sink>/data <src> <salt> <seq> <sr> <channel_onset> <totalsize> <numpackets> <packetnum> <data>
 
 int32_t aoo_sink::handle_message(const char *data, int32_t n, void *endpoint, aoo_replyfn fn){
-    osc::ReceivedPacket packet(data, n);
-    osc::ReceivedMessage msg(packet);
+    aoo::osc::received_packet packet(data, n);
+
+    if (packet.is_bundle()){
+        LOG_WARNING("OSC bundles are not supported (yet)");
+        return 0; // ?
+    }
+
+    aoo::osc::received_message msg(packet);
+    if (!msg.check()){
+        LOG_ERROR("received malformed OSC message!");
+        return 0; // ?
+    }
 
     if (samplerate_ == 0){
         return 1; // not setup yet
@@ -96,58 +104,69 @@ int32_t aoo_sink::handle_message(const char *data, int32_t n, void *endpoint, ao
         return 1; // ?
     }
 
-    if (!strcmp(msg.AddressPattern() + onset, AOO_FORMAT)){
-        if (msg.ArgumentCount() == AOO_FORMAT_NARGS){
-            auto it = msg.ArgumentsBegin();
-            try {
-                int32_t id = (it++)->AsInt32();
-                int32_t salt = (it++)->AsInt32();
-                // get format from arguments
-                aoo_format f;
-                f.nchannels = (it++)->AsInt32();
-                f.samplerate = (it++)->AsInt32();
-                f.blocksize = (it++)->AsInt32();
-                f.codec = (it++)->AsString();
-                const void *blobdata;
-                osc::osc_bundle_element_size_t blobsize;
-                (it++)->AsBlob(blobdata, blobsize);
-
-                handle_format_message(endpoint, fn, id, salt, f, (const char *)blobdata, blobsize);
-            } catch (const osc::Exception& e){
-                LOG_ERROR(e.what());
+    if (!strcmp(msg.address_pattern() + onset, AOO_FORMAT)){
+        if (msg.count() == AOO_FORMAT_NARGS){
+        #if 0
+            std::cerr << "received format message:\n";
+            for (int i = 0; i < msg.size(); ++i){
+                std::cerr << (int)(uint8_t)msg.data()[i] << " ";
             }
+            std::cerr << std::endl;
+        #endif
+            auto it = msg.begin();
+            int32_t id = (it++)->as_int32();
+            int32_t salt = (it++)->as_int32();
+            // get format from arguments
+            aoo_format f;
+            f.nchannels = (it++)->as_int32();
+            f.samplerate = (it++)->as_int32();
+            f.blocksize = (it++)->as_int32();
+            f.codec = (it++)->as_string();
+            auto b = (it++)->as_blob();
+
+            std::cerr << id << " " << salt << " " << f.nchannels << " "
+                      << f.samplerate << " " << f.blocksize << " " << f.codec;
+
+            if (!f.codec){
+                LOG_ERROR("missing codec argument in /format message!");
+                std::terminate();
+                return 1; // ?
+            }
+
+            handle_format_message(endpoint, fn, id, salt, f, b.data, b.size);
         } else {
             LOG_ERROR("wrong number of arguments for /format message");
         }
-    } else if (!strcmp(msg.AddressPattern() + onset, AOO_DATA)){
-        if (msg.ArgumentCount() == AOO_DATA_NARGS){
-            auto it = msg.ArgumentsBegin();
-            try {
-                // get header from arguments
-                auto id = (it++)->AsInt32();
-                auto salt = (it++)->AsInt32();
-                aoo::data_packet d;
-                d.sequence = (it++)->AsInt32();
-                d.samplerate = (it++)->AsDouble();
-                d.channel = (it++)->AsInt32();
-                d.totalsize = (it++)->AsInt32();
-                d.nframes = (it++)->AsInt32();
-                d.framenum = (it++)->AsInt32();
-                const void *blobdata;
-                osc::osc_bundle_element_size_t blobsize;
-                (it++)->AsBlob(blobdata, blobsize);
-                d.data = (const char *)blobdata;
-                d.size = blobsize;
-
-                handle_data_message(endpoint, fn, id, salt, d);
-            } catch (const osc::Exception& e){
-                LOG_ERROR(e.what());
+    } else if (!strcmp(msg.address_pattern() + onset, AOO_DATA)){
+        if (msg.count() == AOO_DATA_NARGS){
+        #if 0
+            std::cerr << "received data message:\n";
+            for (int i = 0; i < msg.size(); ++i){
+                std::cerr << (int)(uint8_t)msg.data()[i] << " ";
             }
+            std::cerr << std::endl;
+        #endif
+            auto it = msg.begin();
+            // get header from arguments
+            auto id = (it++)->as_int32();
+            auto salt = (it++)->as_int32();
+            aoo::data_packet d;
+            d.sequence = (it++)->as_int32();
+            d.samplerate = (it++)->as_double();
+            d.channel = (it++)->as_int32();
+            d.totalsize = (it++)->as_int32();
+            d.nframes = (it++)->as_int32();
+            d.framenum = (it++)->as_int32();
+            auto b = (it++)->as_blob();
+            d.data = b.data;
+            d.size = b.size;
+
+            handle_data_message(endpoint, fn, id, salt, d);
         } else {
             LOG_ERROR("wrong number of arguments for /data message");
         }
     } else {
-        LOG_WARNING("unknown message '" << (msg.AddressPattern() + onset) << "'");
+        LOG_WARNING("unknown message '" << (msg.address_pattern() + onset) << "'");
     }
     return 1; // ?
 }
@@ -514,39 +533,45 @@ void aoo_sink::update_source(aoo::source_desc &src){
 void aoo_sink::request_format(void *endpoint, aoo_replyfn fn, int32_t id){
     LOG_DEBUG("request format");
     char buf[AOO_MAXPACKETSIZE];
-    osc::OutboundPacketStream msg(buf, sizeof(buf));
+    aoo::osc::message_builder msg(buf, sizeof(buf));
 
     // make OSC address pattern
     const int32_t max_addr_size = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_REQUEST);
     char address[max_addr_size];
     snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, id, AOO_REQUEST);
 
-    msg << osc::BeginMessage(address) << id_ << osc::EndMessage;
+    msg.set(address, id_);
 
-    fn(endpoint, msg.Data(), msg.Size());
+    fn(endpoint, msg.data(), msg.size());
 }
 
 void aoo_sink::request_data(aoo::source_desc& src){
     char buf[AOO_MAXPACKETSIZE];
-    osc::OutboundPacketStream msg(buf, sizeof(buf));
+    aoo::osc::message_builder msg(buf, sizeof(buf));
 
     // make OSC address pattern
     const int32_t maxaddrsize = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_RESEND);
     char address[maxaddrsize];
-    snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, src.id, AOO_RESEND);
+    auto addrsize = snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, src.id, AOO_RESEND);
 
     const int32_t maxdatasize = resend_packetsize_ - maxaddrsize - 16;
     const int32_t maxrequests = maxdatasize / 10; // 2 * int32_t + overhead for typetags
     auto d = div(retransmit_list_.size(), maxrequests);
 
     auto dorequest = [&](const data_request* data, int32_t n){
-        msg << osc::BeginMessage(address) << id_ << src.salt;
+        msg.set_address(address, addrsize);
+
+        int ntags = n * 2 + 2;
+        auto typetags = (char *)alloca(ntags);
+        memset(typetags, 'i', ntags);
+        msg.set_args(typetags, ntags);
+
+        msg << id_ << src.salt;
         for (int i = 0; i < n; ++i){
             msg << data[i].sequence << data[i].frame;
         }
-        msg << osc::EndMessage;
 
-        src.send(msg.Data(), msg.Size());
+        src.send(msg.data(), msg.size());
     };
 
     for (int i = 0; i < d.quot; ++i){

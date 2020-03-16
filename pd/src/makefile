@@ -42,10 +42,7 @@ common.sources = \
     $(AOO)/aoo_source.cpp \
     $(AOO)/aoo_sink.cpp \
     $(AOO)/aoo_pcm.cpp \
-    $(AOO)/aoo_opus.cpp \
-    $(AOO)/lib/oscpack/osc/OscTypes.cpp \
-    $(AOO)/lib/oscpack/osc/OscReceivedElements.cpp \
-    $(AOO)/lib/oscpack/osc/OscOutboundPacketStream.cpp
+    $(AOO)/aoo_opus.cpp
 
 # all extra files to be included in binary distribution of the library
 datafiles = aoo_pack~-test.pd aoo_receive~-test.pd aoo_send~-test.pd aoo-test.pd aoo_unpack~-test.pd

@@ -1,8 +1,6 @@
 #include "aoo_source.hpp"
 #include "aoo/aoo_utils.hpp"
-
-#include "oscpack/osc/OscOutboundPacketStream.h"
-#include "oscpack/osc/OscReceivedElements.h"
+#include "aoo/aoo_osc.hpp"
 
 #include <cstring>
 #include <algorithm>
@@ -225,8 +223,14 @@ void aoo_source_handlemessage(aoo_source *src, const char *data, int32_t n,
 
 // /AoO/<src>/request <sink>
 void aoo_source::handle_message(const char *data, int32_t n, void *endpoint, aoo_replyfn fn){
-    osc::ReceivedPacket packet(data, n);
-    osc::ReceivedMessage msg(packet);
+    aoo::osc::received_packet packet(data, n);
+
+    if (packet.is_bundle()){
+        LOG_WARNING("OSC bundles are not supported (yet)");
+        return;
+    }
+
+    aoo::osc::received_message msg(packet);
 
     int32_t src = 0;
     auto onset = aoo_parsepattern(data, n, &src);
@@ -239,86 +243,78 @@ void aoo_source::handle_message(const char *data, int32_t n, void *endpoint, aoo
         return;
     }
 
-    if (!strcmp(msg.AddressPattern() + onset, AOO_REQUEST)){
-        if (msg.ArgumentCount() == 1){
-            try {
-                auto it = msg.ArgumentsBegin();
-                auto id = it->AsInt32();
-                auto sink = std::find_if(sinks_.begin(), sinks_.end(), [&](auto& s){
-                    return (s.endpoint == endpoint) && (s.id == id);
-                });
-                if (sink != sinks_.end()){
-                    // just resend format (the last format message might have been lost)
-                    send_format(*sink);
-                } else {
-                    // add new sink
-                    add_sink(endpoint, id, fn);
-                }
-            } catch (const osc::Exception& e){
-                LOG_ERROR(e.what());
+    if (!strcmp(msg.address_pattern() + onset, AOO_REQUEST)){
+        if (msg.count() == 1){
+            auto it = msg.begin();
+            auto id = it->as_int32();
+            auto sink = std::find_if(sinks_.begin(), sinks_.end(), [&](auto& s){
+                return (s.endpoint == endpoint) && (s.id == id);
+            });
+            if (sink != sinks_.end()){
+                // just resend format (the last format message might have been lost)
+                send_format(*sink);
+            } else {
+                // add new sink
+                add_sink(endpoint, id, fn);
             }
         } else {
             LOG_ERROR("wrong number of arguments for /request message");
         }
-    } else if (!strcmp(msg.AddressPattern() + onset, AOO_RESEND)){
+    } else if (!strcmp(msg.address_pattern() + onset, AOO_RESEND)){
         if (!history_.capacity()){
             return;
         }
-        if (msg.ArgumentCount() >= 4){
-            try {
-                auto it = msg.ArgumentsBegin();
-                // get ID
-                auto id = (it++)->AsInt32();
-                auto sink = std::find_if(sinks_.begin(), sinks_.end(), [&](auto& s){
-                    return (s.endpoint == endpoint) && (s.id == id);
-                });
-                if (sink == sinks_.end()){
-                    LOG_VERBOSE("ignoring '/resend' message: sink not found");
-                    return;
-                }
-                // get salt
-                auto salt = (it++)->AsInt32();
-                if (salt != salt_){
-                    LOG_VERBOSE("ignoring '/resend' message: source has changed");
-                    return;
-                }
-                // get pairs of [seq, frame]
-                int npairs = (msg.ArgumentCount() - 2) / 2;
-                while (npairs--){
-                    auto seq = (it++)->AsInt32();
-                    auto framenum = (it++)->AsInt32();
-                    auto block = history_.find(seq);
-                    if (block){
-                        aoo::data_packet d;
-                        d.sequence = block->sequence;
-                        d.samplerate = block->samplerate;
-                        d.totalsize = block->size();
-                        d.nframes = block->num_frames();
-                        if (framenum < 0){
-                            // whole block
-                            for (int i = 0; i < d.nframes; ++i){
-                                d.framenum = i;
-                                block->get_frame(i, d.data, d.size);
-                                send_data(*sink, d);
-                            }
-                        } else {
-                            // single frame
-                            d.framenum = framenum;
-                            block->get_frame(framenum, d.data, d.size);
+        if (msg.count() >= 4){
+            auto it = msg.begin();
+            // get ID
+            auto id = (it++)->as_int32();
+            auto sink = std::find_if(sinks_.begin(), sinks_.end(), [&](auto& s){
+                return (s.endpoint == endpoint) && (s.id == id);
+            });
+            if (sink == sinks_.end()){
+                LOG_VERBOSE("ignoring '/resend' message: sink not found");
+                return;
+            }
+            // get salt
+            auto salt = (it++)->as_int32();
+            if (salt != salt_){
+                LOG_VERBOSE("ignoring '/resend' message: source has changed");
+                return;
+            }
+            // get pairs of [seq, frame]
+            int npairs = (msg.count() - 2) / 2;
+            while (npairs--){
+                auto seq = (it++)->as_int32();
+                auto framenum = (it++)->as_int32();
+                auto block = history_.find(seq);
+                if (block){
+                    aoo::data_packet d;
+                    d.sequence = block->sequence;
+                    d.samplerate = block->samplerate;
+                    d.totalsize = block->size();
+                    d.nframes = block->num_frames();
+                    if (framenum < 0){
+                        // whole block
+                        for (int i = 0; i < d.nframes; ++i){
+                            d.framenum = i;
+                            block->get_frame(i, d.data, d.size);
                             send_data(*sink, d);
                         }
                     } else {
-                        LOG_VERBOSE("couldn't find block " << seq);
+                        // single frame
+                        d.framenum = framenum;
+                        block->get_frame(framenum, d.data, d.size);
+                        send_data(*sink, d);
                     }
+                } else {
+                    LOG_VERBOSE("couldn't find block " << seq);
                 }
-            } catch (const osc::Exception& e){
-                LOG_ERROR(e.what());
             }
         } else {
             LOG_ERROR("bad number of arguments for /resend message");
         }
     } else {
-        LOG_WARNING("unknown message '" << (msg.AddressPattern() + onset) << "'");
+        LOG_WARNING("unknown message '" << (msg.address_pattern() + onset) << "'");
     }
 }
 
@@ -468,30 +464,42 @@ bool aoo_source::process(const aoo_sample **data, int32_t n, uint64_t t){
 // /AoO/<sink>/data <src> <salt> <seq> <sr> <channel_onset> <totalsize> <nframes> <frame> <data>
 
 void aoo_source::send_data(sink_desc& sink, const aoo::data_packet& d){
-    char buf[AOO_MAXPACKETSIZE];
-    osc::OutboundPacketStream msg(buf, sizeof(buf));
-
     assert(d.data != nullptr);
 
-    if (sink.id != AOO_ID_WILDCARD){
-        const int32_t max_addr_size = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_DATA);
-        char address[max_addr_size];
-        snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, sink.id, AOO_DATA);
+    char buf[AOO_MAXPACKETSIZE];
+    aoo::osc::message_builder msg(buf, sizeof(buf));
 
-        msg << osc::BeginMessage(address);
+    const int32_t max_addr_size = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_DATA);
+    char address[max_addr_size];
+    const char *addr;
+    if (sink.id != AOO_ID_WILDCARD){
+        snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, sink.id, AOO_DATA);
+        addr = address;
     } else {
-        msg << osc::BeginMessage(AOO_DATA_WILDCARD);
+        addr = AOO_DATA_WILDCARD;
     }
+
+    msg.set(addr, id_, salt_, d.sequence, d.samplerate, sink.channel,
+            d.totalsize, d.nframes, d.framenum, aoo::osc::blob(d.data, d.size));
+
+    if (!msg.valid()){
+        LOG_ERROR("invalid data message");
+        return;
+    } else {
+    #if 0
+        std::cerr << "send data message:\n";
+        for (int i = 0; i < msg.size(); ++i){
+            std::cerr << (int)(uint8_t)msg.data()[i] << " ";
+        }
+        std::cerr << std::endl;
+    #endif
+    }
+
+    sink.send(msg.data(), msg.size());
 
     LOG_DEBUG("send block: seq = " << d.sequence << ", sr = " << d.samplerate
               << ", chn = " << sink.channel << ", totalsize = " << d.totalsize
               << ", nframes = " << d.nframes << ", frame = " << d.framenum << ", size " << d.size);
-
-    msg << id_ << salt_ << d.sequence << d.samplerate << sink.channel
-        << d.totalsize << d.nframes << d.framenum
-        << osc::Blob(d.data, d.size) << osc::EndMessage;
-
-    sink.send(msg.Data(), msg.Size());
 }
 
 // /AoO/<sink>/format <src> <salt> <numchannels> <samplerate> <blocksize> <codec> <options...>
@@ -499,26 +507,39 @@ void aoo_source::send_data(sink_desc& sink, const aoo::data_packet& d){
 void aoo_source::send_format(sink_desc &sink){
     if (encoder_){
         char buf[AOO_MAXPACKETSIZE];
-        osc::OutboundPacketStream msg(buf, sizeof(buf));
+        aoo::osc::message_builder msg(buf, sizeof(buf));
 
+        const int32_t max_addr_size = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_FORMAT);
+        char address[max_addr_size];
+        const char *addr;
         if (sink.id != AOO_ID_WILDCARD){
-            const int32_t max_addr_size = sizeof(AOO_DOMAIN) + 16 + sizeof(AOO_FORMAT);
-            char address[max_addr_size];
             snprintf(address, sizeof(address), "%s/%d%s", AOO_DOMAIN, sink.id, AOO_FORMAT);
-
-            msg << osc::BeginMessage(address);
+            addr = address;
         } else {
-            msg << osc::BeginMessage(AOO_FORMAT_WILDCARD);
+            addr = AOO_FORMAT_WILDCARD;
         }
 
         auto settings = (char *)alloca(AOO_CODEC_MAXSETTINGSIZE);
         int32_t nchannels, samplerate, blocksize;
         auto setsize = encoder_->write(nchannels, samplerate, blocksize, settings, AOO_CODEC_MAXSETTINGSIZE);
 
-        msg << id_ << salt_ << nchannels << samplerate << blocksize
-            << encoder_->name() << osc::Blob(settings, setsize) << osc::EndMessage;
+        msg.set(addr, id_, salt_, nchannels, samplerate, blocksize, encoder_->name(),
+                aoo::osc::blob(settings, setsize));
 
-        sink.send(msg.Data(), msg.Size());
+        if (!msg.valid()){
+            LOG_ERROR("invalid format message");
+            return;
+        } else {
+        #if 0
+            std::cerr << "send format message:\n";
+            for (int i = 0; i < msg.size(); ++i){
+                std::cerr << (int)(uint8_t)msg.data()[i] << " ";
+            }
+            std::cerr << std::endl;
+        #endif
+        }
+
+        sink.send(msg.data(), msg.size());
     }
 }
 
