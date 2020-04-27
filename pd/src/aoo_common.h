@@ -40,7 +40,7 @@ int aoo_node_socket(t_aoo_node *node);
 
 int aoo_node_port(t_aoo_node *node);
 
-int32_t aoo_node_sendto(t_aoo_node *node, const char *buf, int32_t size,
+int32_t aoo_node_sendto(t_aoo_node *node, const char *buf, size_t size,
                         const struct sockaddr *addr);
 
 t_aoo_node * aoo_node_add(int port, t_pd *obj, int32_t id);

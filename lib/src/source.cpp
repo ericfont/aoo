@@ -45,12 +45,12 @@ T& as(void *p){
 
 #define CHECKARG(type) assert(size == sizeof(type))
 
-int32_t aoo_source_set_option(aoo_source *src, int32_t opt, void *p, int32_t size)
+int32_t aoo_source_set_option(aoo_source *src, int32_t opt, void *p, size_t size)
 {
     return src->set_option(opt, p, size);
 }
 
-int32_t aoo::source::set_option(int32_t opt, void *ptr, int32_t size)
+int32_t aoo::source::set_option(int32_t opt, void *ptr, size_t size)
 {
     switch (opt){
     // stop
@@ -137,12 +137,12 @@ int32_t aoo::source::set_option(int32_t opt, void *ptr, int32_t size)
     return 1;
 }
 
-int32_t aoo_source_get_option(aoo_source *src, int32_t opt, void *p, int32_t size)
+int32_t aoo_source_get_option(aoo_source *src, int32_t opt, void *p, size_t size)
 {
     return src->get_option(opt, p, size);
 }
 
-int32_t aoo::source::get_option(int32_t opt, void *ptr, int32_t size)
+int32_t aoo::source::get_option(int32_t opt, void *ptr, size_t size)
 {
     switch (opt){
     // format
@@ -194,13 +194,13 @@ int32_t aoo::source::get_option(int32_t opt, void *ptr, int32_t size)
 }
 
 int32_t aoo_source_set_sinkoption(aoo_source *src, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     return src->set_sinkoption(endpoint, id, opt, p, size);
 }
 
 int32_t aoo::source::set_sinkoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size)
+                                   int32_t opt, void *ptr, size_t size)
 {
     if (id == AOO_ID_WILDCARD){
         // set option on all sinks on the given endpoint
@@ -261,13 +261,13 @@ int32_t aoo::source::set_sinkoption(void *endpoint, int32_t id,
 }
 
 int32_t aoo_source_get_sinkoption(aoo_source *src, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     return src->get_sinkoption(endpoint, id, opt, p, size);
 }
 
 int32_t aoo::source::get_sinkoption(void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     if (id == AOO_ID_WILDCARD){
         LOG_ERROR("aoo_source: can't use wildcard to get sink option");

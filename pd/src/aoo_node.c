@@ -239,7 +239,7 @@ void aoo_node_notify(t_aoo_node *x)
 #endif
 }
 
-int32_t aoo_node_sendto(t_aoo_node *x, const char *buf, int32_t size,
+int32_t aoo_node_sendto(t_aoo_node *x, const char *buf, size_t size,
                         const struct sockaddr *addr)
 {
     int result = socket_sendto(x->x_socket, buf, size, addr);

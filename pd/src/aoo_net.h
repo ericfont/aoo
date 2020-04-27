@@ -19,9 +19,9 @@ int socket_close(int socket);
 
 int socket_bind(int socket, int port);
 
-int socket_sendto(int socket, const char *buf, int size, const struct sockaddr *addr);
+int socket_sendto(int socket, const char *buf, size_t size, const struct sockaddr *addr);
 
-int socket_receive(int socket, char *buf, int size,
+int socket_receive(int socket, char *buf, size_t size,
                    struct sockaddr_storage *sa, socklen_t *len,
                    int nonblocking);
 

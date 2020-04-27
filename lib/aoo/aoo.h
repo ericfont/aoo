@@ -396,16 +396,16 @@ AOO_API int32_t aoo_source_events_available(aoo_source *src);
 AOO_API int32_t aoo_source_handle_events(aoo_source *src, aoo_eventhandler fn, void *user);
 
 // set/get options (always threadsafe)
-AOO_API int32_t aoo_source_set_option(aoo_source *src, int32_t opt, void *p, int32_t size);
+AOO_API int32_t aoo_source_set_option(aoo_source *src, int32_t opt, void *p, size_t size);
 
-AOO_API int32_t aoo_source_get_option(aoo_source *src, int32_t opt, void *p, int32_t size);
+AOO_API int32_t aoo_source_get_option(aoo_source *src, int32_t opt, void *p, size_t size);
 
 // set/get sink options (always threadsafe)
 AOO_API int32_t aoo_source_set_sinkoption(aoo_source *src, void *endpoint, int32_t id,
-                                 int32_t opt, void *p, int32_t size);
+                                 int32_t opt, void *p, size_t size);
 
 AOO_API int32_t aoo_source_get_sinkoption(aoo_source *src, void *endpoint, int32_t id,
-                                 int32_t opt, void *p, int32_t size);
+                                 int32_t opt, void *p, size_t size);
 
 // wrapper functions for frequently used options
 
@@ -530,16 +530,16 @@ AOO_API int32_t aoo_sink_events_available(aoo_sink *sink);
 AOO_API int32_t aoo_sink_handle_events(aoo_sink *sink, aoo_eventhandler fn, void *user);
 
 // set/get options (always threadsafe)
-AOO_API int32_t aoo_sink_set_option(aoo_sink *sink, int32_t opt, void *p, int32_t size);
+AOO_API int32_t aoo_sink_set_option(aoo_sink *sink, int32_t opt, void *p, size_t size);
 
-AOO_API int32_t aoo_sink_get_option(aoo_sink *sink, int32_t opt, void *p, int32_t size);
+AOO_API int32_t aoo_sink_get_option(aoo_sink *sink, int32_t opt, void *p, size_t size);
 
 // set/get source options (always threadsafe)
 AOO_API int32_t aoo_sink_set_sourceoption(aoo_sink *sink, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size);
+                              int32_t opt, void *p, size_t size);
 
 AOO_API int32_t aoo_sink_get_sourceoption(aoo_sink *sink, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size);
+                              int32_t opt, void *p, size_t size);
 
 // wrapper functions for frequently used options
 

@@ -139,8 +139,8 @@ public:
         return get_option(aoo_opt_redundancy, AOO_ARG(n));
     }
 
-    virtual int32_t set_option(int32_t opt, void *ptr, int32_t size) = 0;
-    virtual int32_t get_option(int32_t opt, void *ptr, int32_t size) = 0;
+    virtual int32_t set_option(int32_t opt, void *ptr, size_t size) = 0;
+    virtual int32_t get_option(int32_t opt, void *ptr, size_t size) = 0;
 
     //--------------------- sink options --------------------------//
     // set/get sink options (always threadsafe)
@@ -154,9 +154,9 @@ public:
     }
 
     virtual int32_t set_sinkoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size) = 0;
+                                   int32_t opt, void *ptr, size_t size) = 0;
     virtual int32_t get_sinkoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size) = 0;
+                                   int32_t opt, void *ptr, size_t size) = 0;
 protected:
     ~isource(){} // non-virtual!
 };
@@ -280,8 +280,8 @@ public:
         return get_option(aoo_opt_resend_maxnumframes, AOO_ARG(n));
     }
 
-    virtual int32_t set_option(int32_t opt, void *ptr, int32_t size) = 0;
-    virtual int32_t get_option(int32_t opt, void *ptr, int32_t size) = 0;
+    virtual int32_t set_option(int32_t opt, void *ptr, size_t size) = 0;
+    virtual int32_t get_option(int32_t opt, void *ptr, size_t size) = 0;
 
     //----------------- source options -------------------//
     // set/get source options (always threadsafe)
@@ -295,9 +295,9 @@ public:
     }
 
     virtual int32_t set_sourceoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size) = 0;
+                                   int32_t opt, void *ptr, size_t size) = 0;
     virtual int32_t get_sourceoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size) = 0;
+                                   int32_t opt, void *ptr, size_t size) = 0;
 protected:
     ~isink(){} // non-virtual!
 };

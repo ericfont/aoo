@@ -5,6 +5,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -48,7 +49,7 @@ typedef AOO_SAMPLETYPE aoo_sample;
 typedef int32_t (*aoo_sendfn)(
         void *,             // user
         const char *,       // data
-        int32_t,            // numbytes
+        size_t,             // numbytes
         void *              // addr
 );
 

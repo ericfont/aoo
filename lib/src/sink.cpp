@@ -102,12 +102,12 @@ T& as(void *p){
 
 #define CHECKARG(type) assert(size == sizeof(type))
 
-int32_t aoo_sink_set_option(aoo_sink *sink, int32_t opt, void *p, int32_t size)
+int32_t aoo_sink_set_option(aoo_sink *sink, int32_t opt, void *p, size_t size)
 {
     return sink->set_option(opt, p, size);
 }
 
-int32_t aoo::sink::set_option(int32_t opt, void *ptr, int32_t size)
+int32_t aoo::sink::set_option(int32_t opt, void *ptr, size_t size)
 {
     switch (opt){
     // reset
@@ -173,12 +173,12 @@ int32_t aoo::sink::set_option(int32_t opt, void *ptr, int32_t size)
     return 1;
 }
 
-int32_t aoo_sink_get_option(aoo_sink *sink, int32_t opt, void *p, int32_t size)
+int32_t aoo_sink_get_option(aoo_sink *sink, int32_t opt, void *p, size_t size)
 {
     return sink->get_option(opt, p, size);
 }
 
-int32_t aoo::sink::get_option(int32_t opt, void *ptr, int32_t size)
+int32_t aoo::sink::get_option(int32_t opt, void *ptr, size_t size)
 {
     switch (opt){
     // buffer size
@@ -220,13 +220,13 @@ int32_t aoo::sink::get_option(int32_t opt, void *ptr, int32_t size)
 }
 
 int32_t aoo_sink_set_sourceoption(aoo_sink *sink, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     return sink->set_sourceoption(endpoint, id, opt, p, size);
 }
 
 int32_t aoo::sink::set_sourceoption(void *endpoint, int32_t id,
-                                   int32_t opt, void *ptr, int32_t size)
+                                   int32_t opt, void *ptr, size_t size)
 {
     auto src = find_source(endpoint, id);
     if (src){
@@ -247,13 +247,13 @@ int32_t aoo::sink::set_sourceoption(void *endpoint, int32_t id,
 }
 
 int32_t aoo_sink_get_sourceoption(aoo_sink *sink, void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     return sink->get_sourceoption(endpoint, id, opt, p, size);
 }
 
 int32_t aoo::sink::get_sourceoption(void *endpoint, int32_t id,
-                              int32_t opt, void *p, int32_t size)
+                              int32_t opt, void *p, size_t size)
 {
     auto src = find_source(endpoint, id);
     if (src){

@@ -244,15 +244,15 @@ public:
 
     int32_t handle_events(aoo_eventhandler fn, void *user) override;
 
-    int32_t set_option(int32_t opt, void *ptr, int32_t size) override;
+    int32_t set_option(int32_t opt, void *ptr, size_t size) override;
 
-    int32_t get_option(int32_t opt, void *ptr, int32_t size) override;
+    int32_t get_option(int32_t opt, void *ptr, size_t size) override;
 
     int32_t set_sourceoption(void *endpoint, int32_t id,
-                             int32_t opt, void *ptr, int32_t size) override;
+                             int32_t opt, void *ptr, size_t size) override;
 
     int32_t get_sourceoption(void *endpoint, int32_t id,
-                             int32_t opt, void *ptr, int32_t size) override;
+                             int32_t opt, void *ptr, size_t size) override;
     // getters
     int32_t id() const { return id_; }
 

@@ -114,15 +114,15 @@ class source final : public isource {
 
     int32_t handle_events(aoo_eventhandler fn, void *user) override;
 
-    int32_t set_option(int32_t opt, void *ptr, int32_t size) override;
+    int32_t set_option(int32_t opt, void *ptr, size_t size) override;
 
-    int32_t get_option(int32_t opt, void *ptr, int32_t size) override;
+    int32_t get_option(int32_t opt, void *ptr, size_t size) override;
 
     int32_t set_sinkoption(void *endpoint, int32_t id,
-                           int32_t opt, void *ptr, int32_t size) override;
+                           int32_t opt, void *ptr, size_t size) override;
 
     int32_t get_sinkoption(void *endpoint, int32_t id,
-                           int32_t opt, void *ptr, int32_t size) override;
+                           int32_t opt, void *ptr, size_t size) override;
  private:
     // settings
     const int32_t id_;
