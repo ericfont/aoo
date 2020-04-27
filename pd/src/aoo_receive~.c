@@ -12,7 +12,7 @@
 
 #define DEFBUFSIZE 25
 
-/*///////////////////// aoo_receive~ ////////////////////*/
+/* //////////////////// aoo_receive~ /////////////////// */
 
 t_class *aoo_receive_class;
 

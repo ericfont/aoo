@@ -69,7 +69,7 @@ static void lower_thread_priority(void)
 #endif
 }
 
-/*////////////////////// aoo node //////////////////*/
+/* ///////////////////// aoo node ///////////////// */
 
 static t_class *aoo_node_class;
 

@@ -32,7 +32,7 @@
 
 #define classname(x) class_getname(*(t_pd *)x)
 
-/*///////////////////////////// aoo_node /////////////////////////////*/
+/* //////////////////////////// aoo_node //////////////////////////// */
 
 typedef struct _aoo_node t_aoo_node;
 
@@ -63,7 +63,7 @@ void aoo_node_remove_all_peers(t_aoo_node *node);
 
 void aoo_node_notify(t_aoo_node *node);
 
-/*///////////////////////////// aoo_lock /////////////////////////////*/
+/* ///////////////////////////// aoo_lock ///////////////////////////// */
 
 #ifdef _WIN32
 typedef void * aoo_lock;
@@ -83,7 +83,7 @@ void aoo_lock_unlock(aoo_lock *x);
 
 void aoo_lock_unlock_shared(aoo_lock *x);
 
-/*///////////////////////////// helper functions ///////////////////////////////*/
+/* //////////////////////////// helper functions ////////////////////////////// */
 
 int aoo_endpoint_to_atoms(const t_endpoint *e, int32_t id, t_atom *argv);
 

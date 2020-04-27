@@ -20,7 +20,7 @@ typedef int socklen_t;
 #include <stdio.h>
 #include <string.h>
 
-/*///////////////////////// socket /////////////////////////////////*/
+/* //////////////////////// socket //////////////////////////////// */
 
 int socket_errno()
 {
@@ -238,7 +238,7 @@ int sockaddr_to_atoms(const struct sockaddr *sa, socklen_t len, t_atom *a)
     return 1;
 }
 
-/*//////////////////// endpoint ///////////////////////*/
+/* /////////////////// endpoint ////////////////////// */
 
 t_endpoint * endpoint_new(void *owner, const struct sockaddr_storage *sa, socklen_t len)
 {

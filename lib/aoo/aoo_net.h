@@ -36,7 +36,7 @@ extern "C"
 {
 #endif
 
-/*///////////////////////// OSC ////////////////////////////////*/
+/* //////////////////////// OSC /////////////////////////////// */
 
 #define AOONET_MSG_SERVER "/server"
 #define AOONET_MSG_SERVER_LEN 7
@@ -79,7 +79,7 @@ typedef enum aoonet_type
 // returns 1 on success, 0 on fail
 AOO_API int32_t aoonet_parse_pattern(const char *msg, int32_t n, int32_t *type);
 
-/*///////////////////////// AOO events///////////////////////////*/
+/* //////////////////////// AOO events////////////////////////// */
 
 typedef enum aoonet_event_type
 {
@@ -148,7 +148,7 @@ typedef struct aoonet_client_peer_event
 } aoonet_client_peer_event;
 
 
-/*///////////////////////// AOO server /////////////////////////*/
+/* //////////////////////// AOO server //////////////////////// */
 
 #ifdef __cplusplus
 namespace aoo {
@@ -184,7 +184,7 @@ AOO_API int32_t aoonet_server_handle_events(aoonet_server *server,
 // LATER add methods to add/remove users and groups
 // and set/get server options, group options and user options
 
-/*///////////////////////// AOO client /////////////////////////*/
+/* //////////////////////// AOO client //////////////////////// */
 
 #ifdef __cplusplus
 namespace aoo {

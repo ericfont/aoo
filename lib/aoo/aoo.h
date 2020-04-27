@@ -32,7 +32,7 @@ extern "C"
 #define AOO_CLIP_OUTPUT 0
 #endif
 
-/*////////// default values ////////////*/
+/* ///////// default values /////////// */
 
 // max. UDP packet size
 #ifndef AOO_PACKETSIZE
@@ -100,7 +100,7 @@ AOO_API void aoo_initialize(void);
 // terminate AoO library - call only once!
 AOO_API void aoo_terminate(void);
 
-/*//////////////////// OSC ////////////////////////////*/
+/* /////////////////// OSC /////////////////////////// */
 
 #define AOO_MSG_SOURCE "/src"
 #define AOO_MSG_SOURCE_LEN 4
@@ -148,7 +148,7 @@ AOO_API uint64_t aoo_osctime_fromseconds(double s);
 // get time difference in seconds between two NTP timestamps
 AOO_API double aoo_osctime_duration(uint64_t t1, uint64_t t2);
 
-/*//////////////////// AoO events /////////////////////*/
+/* /////////////////// AoO events //////////////////// */
 
 #define AOO_EVENTQUEUESIZE 64
 
@@ -230,7 +230,7 @@ typedef struct aoo_ping_event {
     int32_t lost_blocks; // only for source
 } aoo_ping_event;
 
-/*//////////////////// AoO options ////////////////////*/
+/* /////////////////// AoO options /////////////////// */
 
 typedef enum aoo_option
 {
@@ -330,7 +330,7 @@ typedef enum aoo_option
 #define AOO_ARG(x) &x, sizeof(x)
 #define AOO_ARG_NULL 0, 0
 
-/*//////////////////// AoO source /////////////////////*/
+/* /////////////////// AoO source //////////////////// */
 
 #ifdef __cplusplus
 namespace aoo {
@@ -481,7 +481,7 @@ static inline int32_t aoo_source_get_sink_channelonset(aoo_source *src, void *en
     return aoo_source_get_sinkoption(src, endpoint, id, aoo_opt_channelonset, AOO_ARG(*onset));
 }
 
-/*//////////////////// AoO sink /////////////////////*/
+/* /////////////////// AoO sink //////////////////// */
 
 #ifdef __cplusplus
 namespace aoo {
@@ -603,7 +603,7 @@ static inline int32_t aoo_sink_get_source_format(aoo_sink *sink, void *endpoint,
     return aoo_sink_get_sourceoption(sink, endpoint, id, aoo_opt_format, AOO_ARG(*f));
 }
 
-/*//////////////////// Codec API //////////////////////////*/
+/* /////////////////// Codec API ///////////////////////// */
 
 #define AOO_CODEC_MAXSETTINGSIZE 256
 

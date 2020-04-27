@@ -19,7 +19,7 @@
 
 #define CLAMP(x, a, b) ((x) < (a) ? (a) : (x) > (b) ? (b) : (x))
 
-/*///////////////////////////// aoo_lock /////////////////////////////*/
+/* //////////////////////////// aoo_lock //////////////////////////// */
 
 #ifdef _WIN32
 void aoo_lock_init(aoo_lock *x)
@@ -79,7 +79,7 @@ void aoo_lock_unlock_shared(aoo_lock *x)
 }
 #endif
 
-/*/////////////////////////// helper functions ///////////////////////////////////////*/
+/* ////////////////////////// helper functions ////////////////////////////////////// */
 
 int32_t aoo_endpoint_to_atoms(const t_endpoint *e, int32_t id, t_atom *argv)
 {
