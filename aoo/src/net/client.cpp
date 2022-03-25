@@ -1438,7 +1438,7 @@ void Client::on_exception(const char *what, const osc::Exception &err,
 
 AooError udp_client::handle_bin_message(Client& client, const AooByte *data, int32_t size,
                                         const ip_address& addr, AooMsgType type, int32_t onset) {
-    if (type = kAooTypeRelay) {
+    if (type == kAooTypeRelay) {
         ip_address src;
         onset = binmsg_read_relay(data, size, src);
         if (onset > 0) {
