@@ -61,7 +61,7 @@ ip_address::ip_address(const AooSockAddr &addr)
     : ip_address((const struct sockaddr *)addr.data, addr.size) {}
 
 ip_address::ip_address(const AooByte *bytes, AooSize size,
-                       int port, ip_type type) {
+                       uint16_t port, ip_type type) {
     switch (type) {
 #if AOO_NET_USE_IPv6
     case IPv6:
@@ -128,7 +128,7 @@ void ip_address::resize(socklen_t size) {
 }
 
 std::vector<ip_address> ip_address::resolve(const std::string &host,
-                                            int port, ip_type type){
+                                            uint16_t port, ip_type type){
     std::vector<ip_address> result;
 
     if (host.empty()) {
@@ -205,7 +205,7 @@ std::vector<ip_address> ip_address::resolve(const std::string &host,
     return result;
 }
 
-ip_address::ip_address(int port, ip_type type) {
+ip_address::ip_address(uint16_t port, ip_type type) {
     // LATER optimize
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -240,7 +240,7 @@ ip_address::ip_address(int port, ip_type type) {
     check();
 }
 
-ip_address::ip_address(const std::string& ip, int port, ip_type type) {
+ip_address::ip_address(const std::string& ip, uint16_t port, ip_type type) {
     if (ip.empty() || port <= 0) {
         clear();
         return;
@@ -546,7 +546,7 @@ void socket_error_print(const char *label)
     fflush(stderr);
 }
 
-int socket_udp(int port)
+int socket_udp(uint16_t port)
 {
 #if AOO_NET_USE_IPv6
     // prefer IPv6, but fall back to IPv4 if disabled
@@ -582,7 +582,7 @@ int socket_udp(int port)
     return -1;
 }
 
-int socket_tcp(int port)
+int socket_tcp(uint16_t port)
 {
 #if AOO_NET_USE_IPv6
     // prefer IPv6, but fall back to IPv4 if disabled
